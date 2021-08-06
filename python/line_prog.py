@@ -19,7 +19,7 @@ A = np.array([
 ])
 b = ([-12, 10])
 Aeq = np.array([[1, 1, 1]])
-Beq = np.array([10]) 
+Beq = np.array([6]) 
 res = optimize.linprog(-c, A, b, Aeq, Beq)
 
 
