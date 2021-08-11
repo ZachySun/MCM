@@ -1,0 +1,200 @@
+\documentclass[UTF8]{ctexart}
+\title{数学建模之层次分析法}
+\date{\today}
+\author{ZachySun}
+\usepackage{ listings}
+\pagestyle{empty} 
+
+\usepackage{geometry}
+\geometry{a4paper,scale=0.8}
+
+\begin{document}
+\maketitle
+\section{AHP相关理解}
+\subsection{\textbf{重要概念:判断矩阵}}
+
+层次分析法的第一步，就是要填写判断矩阵，分布对不同的指标进行判断矩阵的构造
+
+\subsection{\textbf{重要概念：一致矩阵}}
+
+对于一个矩阵A，一致矩阵在判断矩阵的条件下需要满足$a_{ik}=a_{ij}\times a_{jk}$
+
+\subsection{\textbf{重要操作之一：一致性检验}}
+
+一致性检验的主要步骤如下：
+
+\begin{enumerate}
+\item [(1)] 计算一致性指标CI
+\item [(2)] 查找对应的平均随机一致性指标RI(与n阶矩阵的n有关)
+\item [(3)] 计算一致性比例CR
+\end{enumerate}
+
+$CI=\frac{\lambda_{max}-n}{n-1} $
+
+$CR=\frac{CI}{RI}$
+（若$CR<0.1$,则判断矩阵的一致性可以接受）
+\subsection{\textbf{重要操作之二：计算权重}}
+\begin{enumerate}
+\item [(1)] 算数平均法求权重：
+
+第一步：
+
+第二步：
+
+第三步：
+
+\item [(2)] 几何平均法求权重：
+
+\item [(3)] 特征值法求权重：
+
+\end{enumerate}
+
+\subsection{\textbf{重要概念:权重矩阵}}
+
+\subsection{\textbf{层次分析法步骤总结}}
+
+\begin{enumerate}
+\item [第一步] 建立层次关系图（目标层、准则层、方案层）
+\item [第二步] 构造判断矩阵
+\item [第三步] 一致性检验
+\item [第四步] 计算权重，得到权重矩阵(可以使用excel)
+\end{enumerate}
+
+思考：层次分析法权重的得到比较主观，最好有充足的数据或者文献支持；其次，层次分析法不适用于决策层太多的情况，而且不适用于数据已知的情况
+
+
+\section{Python实现有关操作}
+
+
+\subsection{Python实现AHP}
+\begin{lstlisting}[language=Python]
+import numpy as np
+import pandas as pd
+
+class AHP:
+    # 传入判断矩阵
+    def __init__(self,array):
+        self.array = array   
+        # 获取矩阵的大小
+        self.n = array.shape[0]
+        # 对RI的值进行初始化
+        RI = [0,0,0.52,0.89,1.12,1.26,1.36,1.41,1.46, 
+                       1.49,1.52,1.54,1.56,1.58,1.59]
+        self.RI = RI[self.n-1]
+        
+    # 特征值法计算权重向量
+    def get_eig(self):
+        # 获取特征值与特征向量
+        eig_val ,eig_vector = 
+        np.linalg.eig(self.array)
+        # 得到最大的特征值
+        max_val = np.max(eig_val)
+        max_val = round(max_val.real, 4)
+        # 得到最大特征值对应的特征向量的索引
+        index = np.argmax(eig_val)
+        max_vector = eig_vector[:,index]
+        max_vector = max_vector.real.round(4) 
+        self.max_val = max_val
+        # 计算权重向量
+        weight_vector = max_vector/sum(max_vector)
+        weight_vector = weight_vector.round(4)
+        
+        print("最大的特征值: "+str(max_val))
+        print("对应的特征向量为: "+str(max_vector))
+        print("归一化后得到权重向量:"+str(weight_vector))
+        return weight_vector
+    
+    def test_consitst(self):
+       
+        CI = (self.max_val-self.n)/(self.n-1) 
+        CI = round(CI,4) 
+      
+        print("判断矩阵的CI值为" +str(CI))
+        print("判断矩阵的RI值为" +str(self.RI))
+     
+        if self.n == 2:
+            print("仅包含两个子因素，不存在一致性问题")
+        else:
+            CR = CI/self.RI 
+            CR = round(CR,4)
+            if  CR < 0.10 :
+                print("判断矩阵的CR值为" +str(CR) + "，通过一致性检验")
+                return True
+            else:
+                print("判断矩阵的CR值为" +str(CR) + ", 未通过一致性检验")
+                return False
+
+
+
+\end{lstlisting} 
+
+
+\section{Matlab实现有关操作}
+
+\begin{lstlisting}[language=Matlab]
+%% AHP
+%% 层次分析法关键步骤
+% 构造判断矩阵
+% 一致性检验
+%  计算权重矩阵
+clear;
+clc;
+    
+%% 输入判断矩阵
+X = [] ;
+    
+%% 算数平均法
+% 1.矩阵的每一个元素均除以其所在列的和
+X_sum1 = sun(X)
+n = size(X, 1)
+X_sum2 = repmat(X_sum1, n, 1) 
+X_c =  X./X_sum2
+% 2.按照行进行求和
+sum(X_c, 2)
+% 3.将此时得到的向量每个元素除以n
+disp('算数平均法求得的权重为：');
+disp(sum(X_c,2) / n)
+    
+%% 几何平均法
+clc;
+% 1.按行相乘
+X_prod = prod(X,2)
+    
+% 2.对新向量的元素开n次方
+X_prod_n = X_prod .^ (1/n)
+    
+% 3.将此时得到的向量除以向量的和
+disp('几何平均法求得的权重为：');
+disp(X_prod_n ./ sum(X_prod_n))
+    
+%% 特征值法
+clc;
+% 1.求矩阵最大的特征值以及对应的特征向量
+[V,D] = eig(X)  
+max_eig = max(max(D))
+[r,c] = find(D == max_eig , 1) 
+    
+% 2.对求出的特征向量进行归一化
+disp('特征值法求得的权重为：');
+disp( V(:,c) ./ sum(V(:,c)) )
+    
+%% 判断是否通过一致性检验
+clc;
+CI = (max_eig - n) / (n-1);        % 求解一致性指标
+% RI(2)有可能需要更改
+RI=[0 0 0.52 0.89 1.12 1.26 1.36 1.41 1.46 
+1.49 1.52 1.54 1.56 1.58 1.59];   
+% 求解一致性比例
+CR=CI/RI(n);                              
+
+disp('CI=');disp(CI);
+disp('CR=');disp(CR);
+if CR<0.10
+    disp('CR<0.10，该判断矩阵通过一致性检验');
+else
+    disp('CR>=0.10，该判断矩阵未通过一致性检验');
+end
+
+\end{lstlisting} 
+
+\end{document}
