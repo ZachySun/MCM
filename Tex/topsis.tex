@@ -1,0 +1,182 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{lmodern}
+\title{数学建模之topsis法}
+\date{\today}
+\author{ZachySun}
+
+\usepackage{ listings}
+\pagestyle{empty} 
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper,scale=0.8}
+
+\begin{document}
+\maketitle
+\section{topsis相关理解}
+
+构造计算评分的公式：
+
+$ \frac{x-min}{max-min} $
+变形：
+
+$ \frac{x-min}{(max-x)+(x-min)} $
+
+评价指标分类：
+
+(1)极大型指标
+
+(2)极小型指标
+
+(3)中间型指标
+
+(4)区间型指标
+
+**指标正向化：
+
+(1)极小型指标->极大型指标: $max-x$
+
+(2)中间型指标->极大型指标：
+
+$M=max{|x_{i}-x_{best}|}, \tilde{x_{i}}=1-\frac{|x_{i}-x_{best}|}{M}$
+
+(3)区间型指标->极大型指标：
+最佳区间为[a,b]
+
+$$
+M=\max \left\{ a-\min \left\{ x_i \right\} ,\max \left\{ x_i \right\} -b \right\} , \tilde{x}_i=\begin{cases}
+	1-\frac{a-x}{M}, x<a\\
+	1,    a\leq x<b\\
+	1-\frac{x-b}{M}, x>b\\
+\end{cases}
+$$
+
+**标准化处理：
+
+$$
+X
+=\begin{bmatrix}
+x_{11}  &  x_{12}  & \cdots\ &x_{1m}\\
+x_{21}  &  x_{22}  & \cdots\ & x_{2m}\\
+\vdots   & \vdots & \ddots  & \vdots  \\
+x_{n1} & x_{n2}  & \cdots\ & x_{nm}\\
+\end{bmatrix}
+$$
+
+将对其标准化的矩阵记为T,则$t_{ij}=\frac{x_{ij}}{\sqrt{\sum_{i=1}^{n} x_{ij}^{2} } } $
+
+**拓展：加上权重
+
+\section{Matlab实现有关操作}
+\textbf{主函数如下：}
+\begin{lstlisting}[language=Matlab]
+    %% topsis
+    %% 加载输入矩阵X
+    clear;clc
+    load % X.mat
+    
+    %% 正向化
+    % 获取输入矩阵的行与列
+    [n.m] = size(X);
+    % 需要正向化处理的指标所在的列
+    located = [];
+    % 这些列对应的处理方式(1:极小型 ；2:中间型；3:区间型)
+    func = [];
+    % 将以上向量输入正向化函数Positivization
+    % 传入参数为：需要正向化处理的列向量；
+    %对应的处理方式；正向化处理的哪一列
+    for i = 1 : size(located,2)
+        X(:,located(i)) = 
+        Positivization(X(:,located(i)),func(i),located(i));
+    end
+    
+    disp('正向化后的矩阵如下：')
+    disp(X)
+    
+    %% 标准化
+    Z = X ./ repmat(sum(X.*X) .^ 0.5, n, 1);
+    disp('最终得到的标准化矩阵Z= ')
+    disp(Z)
+    
+    %% 添加权重
+    % 1：添加 ；2：不添加
+    Judge = input('是否需要增加权重： '); 
+    if Judge == 1
+        % 输入权重向量
+        weigh = input(['请输入权重向量：']);
+        flag = 0;  
+        while flag == 0 
+            if abs(sum(weigh) - 1)<0.000001 && 
+            size(weigh,1) == 1 && size(weigh,2) == m   
+                 flag =1;
+            else
+                weigh = input('error ');
+            end
+        end
+    else
+        weigh = ones(1,m) ./ m ; 
+    end
+    
+    
+    %% 计算与最大、最小值之间的距离以及评分
+    % 与最大值的距离组成的向量
+    D_max = sum([(Z - repmat(max(Z),n,1)) .^ 2 ] 
+    .* repmat(weigh,n,1) ,2) .^ 0.5;
+    % 与最小值的距离组成的向量
+    D_min = sum([(Z - repmat(min(Z),n,1)) .^ 2 ] 
+    .* repmat(weigh,n,1) ,2) .^ 0.5;
+    % 得到未归一化的评分
+    S = D_min ./ (D_max+D_min); 
+    disp('最终得到的评分如下：')
+    stand_S = S / sum(S);
+    % 对评分进行排序
+    [S_sort,index] = sort(stand_S ,'descend');
+
+
+\end{lstlisting} 
+\textbf{正向化函数如下：}
+\begin{lstlisting}[language=Matlab]
+    function [x_positive] = Positivization(x,func,i)
+    if type == 1  
+        x_positive = Min2Max(x);  
+    elseif type == 2  
+        best = input('请输入最佳值 ：');
+        x_positive = Mid2Max(x,best);
+    elseif type == 3  
+        a = input('区间下界： ');
+        b = input('区间上界： '); 
+        x_positive = Inter2Max(x,a,b);
+    else
+        disp('指标出错')
+    end
+end
+
+function [x_positive] = Min2Max(x)
+    x_positive = max(x) - x; 
+end
+
+function [x_positive] = Mid2Max(x, best)
+    M = max(abs(x - best)); 
+    x_positive = 1 - abs(x - best) / M; 
+end
+
+function [x_positive] = Inter2Max(x,a,b)
+    r = size(x,1); 
+    M = max([a - min(x)], max(x) - b); 
+    x_positive = zeros(r , 1);  
+    
+    for i = 1 : r 
+        if x(i) < a 
+            x_positive(i) = 1 - (a - x(i)) / M;
+        elseif x(i) > b 
+            x_positive(i) = 1 - (x(i) - b) / M;
+        else 
+            x_positive(i) = 1;
+        end
+    end
+end
+
+
+\end{lstlisting} 
+
+\end{document}
