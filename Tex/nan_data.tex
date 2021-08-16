@@ -1,0 +1,126 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{lmodern}
+\title{数学建模之缺失值处理}
+\date{\today}
+\author{ZachySun}
+
+\usepackage{ listings}
+\pagestyle{empty} 
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper,scale=0.8}
+
+\begin{document}
+\maketitle
+
+\section{插值算法}
+\textbf{插值方法}
+
+1.多项式插值
+
+高次插值会产生龙格现象
+
+2.分段插值***
+
+3.插值法原理如下：
+
+设有n+1个互不相同的节点$(x_{i},y_{i})$,(i=0,1,2,...,n),
+则存在唯一的多项式：
+$$
+L_n\left( x \right) =a_0+a_1x+a_2x^2+...+a_nx^n
+$$
+使得$L_n\left( x_j \right) =\,\,y_j$，(j=0,1,2,...,n)
+
+4.拉格朗日插值法**
+
+5.牛顿插值法**
+
+6.埃尔米特插值**
+
+最常用：分段三次埃尔米特插值
+
+7.三次样条插值**
+
+注：插值算法还可以用于预测
+\section{插值算法的MATLAB实现}
+
+\begin{lstlisting}[language=Matlab]
+%% nan_data
+%% 分段三次埃尔米特插值
+x = -pi:pi; 
+y = sin(x); 
+new_x = -pi:0.15:pi;
+p = pchip(x,y,new_x);
+figure(1); 
+plot(x, y, 'o', new_x, p, 'r-')
+    
+%% 三次样条插值
+x = -pi:pi; 
+y = sin(x); 
+new_x = -pi:0.15:pi;
+% 分段三次埃尔米特插值
+p1 = pchip(x,y,new_x);   
+% 三次样条插值
+p2 = spline(x,y,new_x);  
+figure(2);
+plot(x,y,'o',new_x,p1,'r-',new_x,p2,'g-')
+legend('样本点','三次埃尔米特插值','三次样条插值','Location','SouthEast')   
+
+\end{lstlisting} 
+
+\section{Python缺失值处理}
+\begin{lstlisting}[language=Python]
+    #!/usr/bin/env python
+    # coding: utf-8
+    
+    import pandas as pd
+    import numpy as np
+    from numpy import nan
+    
+    # 生成含缺失值的数据
+    data=pd.DataFrame(np.arange(3,35,1).reshape(8,4),columns=list('abcd'))
+    data.iloc[1:2,:3]=nan
+    data
+    #     1.检查缺失值
+    
+    
+    data.isnull()
+    
+    data.notnull()
+    
+    data.isnull().sum()
+    
+    data.info()
+    #     2.缺失值填充
+    
+    data_1 = data.fillna(0)
+    data_1
+    
+    data_2 = data.fillna("$")
+    data_2
+    
+    data['a']=data['a'].fillna(data['a'].sum())
+    data
+    # In[19]:
+    # 插值算法
+    df = pd.DataFrame([(0.0, np.nan, -1.0, 1.0),
+                       (np.nan, 3.0, np.nan, np.nan),
+                       (2.0, 3.0, np.nan, 9.0),
+                       (np.nan, 4.0, -4.0, 15.0)],
+                      columns=list('abcd'))
+    df
+    
+    df.interpolate(method='linear', limit_direction='forward', axis=0)
+    
+    df.interpolate(method='linear', axis=0)
+    
+    df['d'].interpolate(method='spline', axis=0, order=2)
+    
+
+
+
+\end{lstlisting} 
+
+
+\end{document}
