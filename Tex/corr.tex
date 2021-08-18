@@ -1,0 +1,226 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{lmodern}
+\title{数学建模之相关性分析}
+\date{\today}
+\author{ZachySun}
+
+\usepackage{ listings}
+\pagestyle{empty} 
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper,scale=0.8}
+
+\begin{document}
+\maketitle
+\section{相关系数}
+
+\subsection{皮尔逊相关系数}
+\subsubsection{总体皮尔逊相关系数}
+
+$$
+\rho _{XY}=\frac{Cov\left( X,Y \right)}{\sigma _X\sigma _Y}
+$$
+$$
+E\left( X \right) =\frac{\sum_{i=1}^n{X_i}}{n},E\left( Y \right) =\frac{\sum_{i=1}^n{Y_i}}{n}
+$$
+$$
+\text{总体协方差}:Cov\left( X,Y \right) =\frac{\sum_{i=1}^n{\left( X_i-E\left( X \right) \right) \left( Y_i-E\left( Y \right) \right)}}{n}
+$$
+$$
+\sigma _X=\sqrt{\frac{\sum_{i=1}^n{\left( X_i-E\left( X \right) \right) ^2}}{n}},\sigma _Y=\sqrt{\frac{\sum_{i=1}^n{\left( Y_i-E\left( Y \right) \right) ^2}}{n}},
+$$
+
+\subsubsection{样本皮尔逊相关系数}
+$$
+\text{样本}pearson\text{相关系数：}r_{XY}=\frac{Cov\left( X,Y \right)}{S_XS_Y}
+$$
+$$
+\text{样本均值：}\bar{X}=\frac{\sum_{i=1}^n{X_i}}{n},\bar{Y}=\frac{\sum_{i=1}^n{Y_i}}{n}
+$$
+$$
+\text{样本标准差：}S_X=\sqrt{\frac{\sum_{i=1}^n{\left( X_i-\bar{X} \right) ^2}}{n-1}},S_Y=\sqrt{\frac{\sum_{i=1}^n{\left( Y_i-\bar{Y} \right) ^2}}{n-1}}
+$$
+
+-1:线性负相关
++1:线性正相关
+相关系数受异常值影响较大
+相关系数衡量\textbf{线性}相关性,判断之前要画出散点图
+
+
+\subsubsection{对皮尔逊相关系数进行假设检验}
+(1)提出原假设以及备择假设
+
+(2)构造统计量
+
+(3)将检验值代入统计量
+
+(4)绘制概率密度函数
+
+(5)判断检验值
+
+可以使用p值计算法
+
+\subsection{斯皮尔曼相关系数}
+X、Y为两组数据，斯皮尔曼相关系数:
+$$
+r_s=1-\frac{6\sum_{i=1}^n{d_{i}^{2}}}{n\left( n^2-1 \right)}
+$$
+$d_{i}为X_{i}与Y_{i}之间的等级差$
+
+等级为排序后所在的位置
+
+斯皮尔曼相关系数也被称为等级之间的皮尔逊相关系数
+
+\subsection{Python实现相关操作}
+
+
+\subsubsection{Python实现相关系数的计算}
+
+
+\subsubsection{Python实现描述性统计}
+
+
+\subsubsection{Python绘制各变量之间的散点图}
+
+
+\subsubsection{Python实现相关系数矩阵热图绘制}
+
+
+\subsection{MATLAB实现相关操作}
+\subsubsection{MATLAB实现相关系数的计算}
+\begin{lstlisting}[language=Matlab]
+
+R = corrcoef(Test)
+
+\end{lstlisting} 
+
+\subsubsection{MATLAB实现描述性统计}
+\begin{lstlisting}[language=Matlab]
+    
+    % 每一列的最小值
+    MIN = min(Test);  
+    % 每一列的最大值
+    MAX = max(Test);   
+    % 每一列的平均值
+    MEAN = mean(Test);  
+    % 每一列的中位数
+    MEDIAN = median(Test);  
+    % 每一列的偏度
+    SKEWNESS = skewness(Test); 
+    % 每一列的峰度
+    KURTOSIS = kurtosis(Test); 
+    % 每一列的标准差
+    STD = std(Test);  
+    Describe = [MIN;MAX;MEAN;MEDIAN;SKEWNESS;KURTOSIS;STD]  
+    
+\end{lstlisting} 
+
+\subsubsection{MATLAB实现假设检验}
+\begin{lstlisting}[language=Matlab]
+    %% 假设检验
+    x = -4:0.1:4;
+    y = tpdf(x,28);  
+    figure(1)
+    plot(x,y,'-')
+    grid on  
+    hold on  
+    % matlab可以求出临界值
+    tinv(0.975,28)    %    2.0484
+    plot([-2.048,-2.048],[0,tpdf(-2.048,28)],'r-')
+    plot([2.048,2.048],[0,tpdf(2.048,28)],'r-')
+    
+    %% 计算各列之间的相关系数以及p值
+    [R,P] = corrcoef(Test)
+    
+\end{lstlisting} 
+
+\subsubsection{MATLAB计算斯皮尔曼相关系数}
+\begin{lstlisting}[language=Matlab]
+    %% 计算斯皮尔曼相关系数
+    X = [3 8 4 7 2]'  
+    Y = [5 10 9 10 6]'
+    
+    % 计算方法
+    coeff = corr(X , Y , 'type' , 'Spearman')
+    % 等价于：
+    RX = [2 5 3 4 1]
+    RY = [1 4.5 3 4.5 2]
+    R = corrcoef(RX,RY)
+    
+    % 计算各列的斯皮尔曼相关系数
+    R = corr(Test, 'type' , 'Spearman')
+    
+    % 对斯皮尔曼相关系数进行假设检验
+    % 小样本直接进行查表
+    
+    % 大样本
+    
+    % 计算检验值
+    disp(sqrt(590)*0.0301)
+    % 计算p值
+    disp((1-normcdf(0.7311))*2) % normcdf用来计算标准正态分布的累积概率密度函数
+    
+    %% 直接给出相关系数和p值
+    [R,P]=corr(Test, 'type' , 'Spearman')
+
+\end{lstlisting} 
+
+\subsection{Excel实现相关操作}
+\subsubsection{Excel实现描述性统计}
+"数据"-->"数据分析"-->"描述统计"
+
+
+
+\subsection{SPSS实现相关操作}
+\subsubsection{SPSS实现描述性统计}
+"分析"-->"描述统计"-->"描述"(在"选项"中可以选择统计量)
+
+
+
+\subsubsection{SPSS绘制各变量之间的散点图}
+"图形"-->"旧对话框"-->"散点图|点图"
+
+
+\subsubsection{SPSS计算p值}
+"分析"-->"相关"-->"双变量"
+
+\subsection{正态分布检验}
+(皮尔逊相关系数的条件之一)
+
+(1)JB检验(样本数>30)
+
+正态分布偏度为0，偏度为3
+
+(2)shapiro-wilk检验(3<=样本数<=50)
+
+使用SPSS：
+
+"分析"-->"描述统计"-->"探索"-->"图"
+
+\subsubsection{MATLAB实现正态分布检验}
+\begin{lstlisting}[language=Matlab]
+    %% 正态分布检验
+    % 生成正态分布
+    x = normrnd(2,3,100,1);   
+    skewness(x)  %计算偏度
+    kurtosis(x)  %计算峰度
+    qqplot(x)
+        
+    % 循环检验所有列的数据
+    n_c = size(Test,2);  
+    H = zeros(1,6);  
+    P = zeros(1,6);
+    for i = 1:n_c
+        [h,p] = jbtest(Test(:,i),0.05);
+        H(i)=h;
+        P(i)=p;
+    end
+    disp(H)
+    disp(P)
+    % h=1,不是正态分布
+
+\end{lstlisting} 
+
+
+\end{document}
