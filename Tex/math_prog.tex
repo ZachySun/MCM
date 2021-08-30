@@ -1,0 +1,115 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{lmodern}
+\title{数学建模之规划问题}
+\date{\today}
+\author{ZachySun}
+
+\usepackage{listings}
+\pagestyle{empty} 
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper,scale=0.8}
+
+\begin{document}
+\maketitle
+\section{数学规划概述}
+求解目标函数在一定约束下的极值
+
+决策变量；目标函数；约束条件
+
+\section{线性规划}
+
+\subsection{线性规划的标准型}
+$$
+\min  C^TX
+\\
+C=\left( \begin{array}{c}
+	c_1\\
+	c_2\\
+	\vdots\\
+	c_n\\
+\end{array} \right) ,X=\left( \begin{array}{c}
+	x_1\\
+	x_2\\
+	\vdots\\
+	x_n\\
+\end{array} \right) ,n\text{是决策变量的个数}
+\\
+s.t.\begin{cases}
+	Ax\leq b\\
+	Aeq\cdot x=beq\\
+	lb\leq x\leq ub\\
+\end{cases}
+$$
+
+无下界：-inf
+无上界：inf
+
+对于MAX问题，可以通过将C改成相反数解决
+
+\subsection{MATLAB中求解线性规划的命令}
+[x,fval] = linprog[c,A,b,Aeq,beq,lb,ub,x0]
+
+x0表示初始值，可以不给出
+
+x为最小值处的x取值;fval表示最小值
+
+求最大值，在fval最后加一个负号
+
+如果不等式约束为>或<,可以进行放缩
+
+双下标转单下标问题
+
+\subsection{线性整数规划}
+0-1规划是特殊的整数规划
+
+[x,fval]= intlinprog[c,intcon,A,b,Aeq,Beq,lb,ub]
+
+不能指定初始值，intcon可以指定哪些决策变量为整数
+
+0-1规划特定上下界即可
+
+\section{非线性规划}
+非线性规划标准型
+
+$$
+\min  f\left( x \right) 
+\\
+s.t.\begin{cases}
+	Ax\leq b, Aeq\cdot x=beq\\
+	c\left( x \right) \leq 0, ceq\left( x \right) =0\\
+	lb\leq x\leq ub\\
+\end{cases}
+$$
+
+[x,fval]=fmincon[@fun,x0,A,b,Aeq,Beq,lb,ub,@nonlfun,option]
+
+四种约束：
+
+线性等式约束、非线性等式约束、线性不等式约束、非线性不等式约束
+
+\section{最大最小化模型}
+
+一般数学模型
+$$
+\underset{x}{\min}\left\{ \max \left[ f_1\left( x \right) ,f_2\left( x \right) ,...,f_m\left( x \right) \right] \right\} 
+\\
+s.t.\begin{cases}
+	Ax\leq b\\
+	Aeq\cdot x=beq\\
+	C\left( x \right) \leq x\\
+	Ceq\left( x \right) =0\\
+	VLB\leq X\leq VUB\\
+\end{cases}
+$$
+
+[x,fval] = fminimax(@fun,x0,A,b,Aeq,beq,lb,ub,@nonlfun)
+
+\section{多目标规划问题}
+
+转换为单目标规划问题
+
+敏感性分析
+
+\end{document}
